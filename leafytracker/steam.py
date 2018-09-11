@@ -117,7 +117,7 @@ class CommentsFeed:
         )
 
         if r.status_code == requests.codes.ok:
-            return BeautifulSoup(r.json()["comments_html"])
+            return BeautifulSoup(r.json()["comments_html"], features="lxml")
 
     def get(self, post_id, user_ids=[], start=0, count=None):
         """Returns a list of comments for the given post, optionally filtered by user ID."""
