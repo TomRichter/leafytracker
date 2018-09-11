@@ -126,7 +126,7 @@ class CommentsFeed:
         user_ids = set(user_ids)
 
         url = self.news_article_url.format(post_id=post_id)
-        title = type(self).RE_TITLE.search(requests.get(url).text).group(1)
+        title = type(self).RE_TITLE.search(requests.get(url).text).group(1).split("::", 1)[-1].strip()
 
         for comment in soup.find_all("div", class_="commentthread_comment"):
             # Get author's user ID
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     comments = feed.get(1702811255219116398, user_ids={257266967})
 
     for c in comments:
-        print("{} - {}".format(c.author.name, c.timestamp()))
+        print("{} posted on {} at {}".format(c.author.name, c.title, c.timestamp()))
 
     print("Took {}".format(datetime.now() - start))
 
