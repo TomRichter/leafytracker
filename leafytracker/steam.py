@@ -33,11 +33,13 @@ class Author:
 
 
 class Comment:
-    def __init__(self, cid, author, datetime, body):
+    def __init__(self, cid, author, datetime, body, url, title):
         self.cid = cid
         self.author = author
         self.datetime = datetime
         self.body = body
+        self.url = url
+        self.title = title
 
     def timestamp(self, time_format="%b %-d, %Y at %-I:%M:%S %p %Z"):
         return self.datetime.strftime(time_format)
@@ -55,15 +57,17 @@ class Comment:
         return False
 
     def __str__(self):
-        return "<Comment {} by {} on {}>".format(
+        return "<Comment {} by {} on {} at {}>".format(
             self.cid,
             self.author.name,
+            self.title,
             self.timestamp
         )
 
 class CommentsFeed:
     RE_COMMENT_ID = re.compile(r"^comment_([0-9]+)$")
     RE_GROUP_ID = re.compile(r"steam://friends/joinchat/([0-9]+)")
+    RE_TITLE = re.compile(r"<title>(.*)</title>")
 
     def __init__(self, app_id):
         self.app_id = app_id
@@ -115,10 +119,14 @@ class CommentsFeed:
         if r.status_code == requests.codes.ok:
             return BeautifulSoup(r.json()["comments_html"])
 
-    def get(self, post_id, user_ids=set(), start=0, count=None):
+    def get(self, post_id, user_ids=[], start=0, count=None):
         """Returns a list of comments for the given post, optionally filtered by user ID."""
         soup = self._request_comments(post_id, start, count)
         filtered_comments = []
+        user_ids = set(user_ids)
+
+        url = self.news_article_url.format(post_id=post_id)
+        title = type(self).RE_TITLE.search(requests.get(url).text).group(1)
 
         for comment in soup.find_all("div", class_="commentthread_comment"):
             # Get author's user ID
@@ -147,6 +155,8 @@ class CommentsFeed:
                 author=author,
                 datetime=self._parse_datetime(comment),
                 body=self._parse_body(comment),
+                url=url,
+                title=title,
             ))
 
         filtered_comments.sort()
