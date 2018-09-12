@@ -41,7 +41,7 @@ class Comment:
         self.url = url
         self.title = title
 
-    def timestamp(self, time_format="%b %-d, %Y at %-I:%M:%S %p %Z"):
+    def timestamp(self, time_format="%A, %b %-d, %Y at %-I:%M:%S %p %Z"):
         return self.datetime.strftime(time_format)
 
     def __lt__(self, other):
