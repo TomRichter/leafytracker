@@ -5,27 +5,33 @@ import tomd
 
 from DiscordHooks import Hook, Embed, EmbedAuthor, Color
 from os.path import isfile
-from steam import CommentsFeed
+from leafytracker.steam import CommentsFeed
 from time import sleep
 
 
 class SteamCommentsWebhook:
+    # Extra HTML -> Markdown fixes needed on top of tomd.convert()
+    MARKDOWN_FIXES = {
+        # Convert HTML <br> to Markdown newline
+        "<br>": "\n", "<br/>": "\n", "<br />": "\n",
+        # Convert unordered pseudo-lists into Markdown unordered lists
+        "(?<=<br>)-": " * ", "(?<=<br/>)-": " * ", "(?<=<br />)-": " * ", "-": " * ",
+        # Remove Steam link filter from links
+        "https\\:\\/\\/steamcommunity\\.com\\/linkfilter\\/\\?url\\=": "",
+        "https://steamcommunity.com/linkfilter/?url=": "",
+    }
+    RE_MARKDOWN_FIXES = re.compile("|".join(MARKDOWN_FIXES.keys()))
+
     def __init__(self, app_id, cache_path):
         self.app_id = app_id
         self.steam_comments = CommentsFeed(self.app_id)
         self.last_broadcasted = LastBroadcastedCache(cache_path)
 
     def _html_to_markdown(self, text):
-                # <p></p> hack to make tomd.convert() work
-                # lxml.html.clean.clean_html() wasn't enough
-        return tomd.convert("<p>{}</p>".format(text)
-                # Fix newlines
-                ).replace("<br>", "\n").replace("<br/>", "\n").replace("<br />", "\n"
-                # Fix unordered lists
-                ).replace("\n-", "\n * "
-                # Remove Steam link filter
-                ).replace("https://steamcommunity.com/linkfilter/?url=", ""
-                ).strip()
+                # <p></p> hack to make tomd.convert() work.
+                # lxml.html.clean.clean_html() doesn't wrap loose text in anything,
+                # so tomd.convert() throws away the entire comment.
+        return tomd.convert("<p>{}</p>".format(type(self).RE_MARKDOWN_FIXES.sub(lambda x: type(self).MARKDOWN_FIXES.get(x.group(0), "REGEX_FAILED"), text))).strip()
 
     def post(self, news_ids, user_ids, webhooks):
         news_ids = set(int(x) for x in news_ids)
@@ -56,7 +62,7 @@ class SteamCommentsWebhook:
                         ).execute()
 
                         self.last_broadcasted.put(webhook_url, nid, comment.cid)
-                        sleep(1/5) # TODO: Ghetto rate limit of 5 per 1 second
+                        sleep(1/4)  # TODO: Ghetto rate limit of 5 per 1 second
 
         self.last_broadcasted.save()
 
@@ -96,7 +102,7 @@ class LastBroadcastedCache:
 
 if __name__ == "__main__":
     app_id = 252870
-    article_count=2
+    article_count = 1
 
     news_listings = feedparser.parse("https://steamcommunity.com/games/{app_id}/rss/".format(app_id=app_id))
     news_ids = {x.link.rsplit("/detail/", 1)[-1] for x in news_listings.entries[:article_count]}
