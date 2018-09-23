@@ -8,13 +8,13 @@ A set of tools to aggregate Leafy Games' developer posts for PULSAR: Lost Colony
 
 ## Installation
 
-```
-git clone https://github.com/TomRichter/leafytracker.git
-cd leafytracker
+```bash
+$ git clone https://github.com/TomRichter/leafytracker.git
+$ cd leafytracker
 
-virtualenv env --python=/path/to/python3
-. env/bin/activate  # On Windows: env\Scripts\activate
-pip install -r requirements.txt
+$ virtualenv env --python=/path/to/python3
+$ . env/bin/activate  # On Windows: env\Scripts\activate
+(env) $ pip install -r requirements.txt
 ```
 
 ## Configuration
@@ -42,18 +42,20 @@ Edit `config.json` to add Discord `webhooks` to pipe to, `app_ids` of games to w
 ## Running
 
 ```
-. bin/metalbandit
+. bin/leafytracker
 ```
 
 or
 
 ```
-python3 -m metalbandit
+python3 -m leafytracker
 ```
 
 `leafytracker` quits after a single pass, and is best used with a periodic execution tool like `cron` to check for updates regularly:
 
-```cron
+```bash
+$ crontab -e
+
 # Every 20 minutes
 */20 * * * * /path/to/leafytracker/bin/leafytracker
 ```
