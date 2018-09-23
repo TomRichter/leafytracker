@@ -1,12 +1,11 @@
-import re
-import requests
 import logging
-
-from bs4 import BeautifulSoup
+import re
 from datetime import datetime, timezone
 
-from leafytracker.const import PROJECT
+import requests
+from bs4 import BeautifulSoup
 
+from leafytracker.const import PROJECT
 
 logger = logging.getLogger(PROJECT.NAME)
 
@@ -83,14 +82,16 @@ class CommentsFeed:
         """Returns the comment's post ID."""
         return int(type(self).RE_COMMENT_ID.search(comment.get("id")).group(1))
 
-    def _parse_datetime(self, comment):
+    @staticmethod
+    def _parse_datetime(comment):
         """Returns the comment's post time as a UTC datetime."""
         tag = comment.find("span", class_="commentthread_comment_timestamp")
         utc_unix_time = int(tag.get("data-timestamp"))
 
         return datetime.fromtimestamp(utc_unix_time, timezone.utc)
 
-    def _parse_body(self, comment):
+    @staticmethod
+    def _parse_body(comment):
         """Returns the comment's body with HTML intact."""
         tag = comment.find("div", class_="commentthread_comment_text")
 
@@ -168,12 +169,11 @@ class CommentsFeed:
 
 
 if __name__ == "__main__":
-    start = datetime.now()
+    start_time = datetime.now()
     feed = CommentsFeed(252870)
     comments = feed.get(1702811255219116398, user_ids={257266967})
 
     for c in comments:
         print("{} posted on {} at {}".format(c.author.name, c.title, c.timestamp()))
 
-    print("Took {}".format(datetime.now() - start))
-
+    print("Took {}".format(datetime.now() - start_time))

@@ -1,4 +1,5 @@
 from feedgen.feed import FeedGenerator
+
 from leafytracker.steam import CommentsFeed
 
 
@@ -13,7 +14,7 @@ class SteamCommentsRss:
         self.feed.link(href="https://pulsar.wiki/leafytracker/")
         self.feed.description("Comments by leafygamesdev on PULSAR news articles.")
         self.feed.language("en")
-        self.feed.generator("https://pulsar.wiki/leafytracker/") # TODO: Automate project name and version
+        self.feed.generator("https://pulsar.wiki/leafytracker/")  # TODO: Automate project name and version
 
     def append_comments(self, news_ids, user_ids):
         news_ids = set(int(x) for x in news_ids)
@@ -40,4 +41,3 @@ if __name__ == "__main__":
     steam = SteamCommentsRss(252870)
     steam.append_comments(news_ids={1702811255219116398}, user_ids={257266967})
     steam.to_atom("steam.atom")
-

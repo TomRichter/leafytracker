@@ -4,10 +4,8 @@ import logging
 import os
 import sys
 
-from leafytracker.const import PROJECT
-
 import leafytracker.discord_webhook as discord_webhook
-
+from leafytracker.const import PROJECT
 
 logger = logging.getLogger(PROJECT.NAME)
 
@@ -37,7 +35,7 @@ def _log_unhandled_exceptions(func):
             func(*args, **kwargs)
         except Exception:
             logger.exception(u"%s has crashed!", PROJECT.NAME)
-    
+
     return wrapper
 
 
@@ -55,7 +53,7 @@ def start(raw_args):
         level=logging.DEBUG if args.verbose else logging.INFO,
         filemode="a",
     )
-    
+
     # Load config file
     with open("config.json") as config_file:
         config = json.load(config_file)
@@ -74,5 +72,5 @@ def start(raw_args):
 
 if __name__ == "__main__":
     os.chdir(os.path.join(os.path.dirname(__file__), ".."))
-    
+
     start(sys.argv[1:])

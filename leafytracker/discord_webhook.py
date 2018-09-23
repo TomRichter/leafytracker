@@ -1,10 +1,10 @@
-import feedparser
 import json
-
-from DiscordHooks import Hook, Embed, EmbedAuthor, Color
-from markdownify import markdownify as md
 from os.path import isfile
 from time import sleep
+
+import feedparser
+from DiscordHooks import Hook, Embed, EmbedAuthor, Color
+from markdownify import markdownify as md
 
 from leafytracker.steam import CommentsFeed
 
@@ -15,7 +15,8 @@ class SteamCommentsWebhook:
         self.steam_comments = CommentsFeed(self.app_id)
         self.last_broadcasted = LastBroadcastedCache(cache_path)
 
-    def _html_to_markdown(self, text):
+    @staticmethod
+    def _html_to_markdown(text):
         return md(text.replace("https://steamcommunity.com/linkfilter/?url=", "")).strip()
 
     def post(self, news_ids, user_ids, webhooks):
@@ -47,7 +48,7 @@ class SteamCommentsWebhook:
                         ).execute()
 
                         self.last_broadcasted.put(webhook_url, nid, comment.cid)
-                        sleep(1/4)  # TODO: Ghetto rate limit of 4 per 1 second
+                        sleep(1 / 4)  # TODO: Ghetto rate limit of 4 per 1 second
 
         self.last_broadcasted.save()
 
