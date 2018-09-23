@@ -62,7 +62,7 @@ def start(raw_args):
     # Start the program!
     logger.info("Starting %s %s", PROJECT.NAME, PROJECT.VERSION)
 
-    logger.info("Sending Steam News Comments to Discord...")
+    logger.info("Sending Steam Articles and Comments to Discord...")
     discord_webhook.run(
         config.get("app_ids", set()),
         config.get("user_ids", set()),
