@@ -62,7 +62,7 @@ class SteamCommentsWebhook:
                         ).execute()
 
                         self.last_broadcasted.put(webhook_url, nid, comment.cid)
-                        sleep(1/4)  # TODO: Ghetto rate limit of 5 per 1 second
+                        sleep(1/4)  # TODO: Ghetto rate limit of 4 per 1 second
 
         self.last_broadcasted.save()
 
@@ -100,19 +100,14 @@ class LastBroadcastedCache:
         self.db[webhook_url][news_id] = comment_id
 
 
-if __name__ == "__main__":
-    app_id = 252870
-    article_count = 1
+def run(app_ids, user_ids, webhooks, article_count=1):
+    for aid in app_ids:
+        news_listings = feedparser.parse("https://steamcommunity.com/games/{app_id}/rss/".format(app_id=aid))
+        news_ids = {x.link.rsplit("/detail/", 1)[-1] for x in news_listings.entries[:article_count]}
 
-    news_listings = feedparser.parse("https://steamcommunity.com/games/{app_id}/rss/".format(app_id=app_id))
-    news_ids = {x.link.rsplit("/detail/", 1)[-1] for x in news_listings.entries[:article_count]}
-
-    comment_hooker = SteamCommentsWebhook(app_id, "steam.json")
-    comment_hooker.post(
-        news_ids=news_ids,
-        user_ids={257266967},
-        webhooks={
-            "https://discordapp.com/api/webhooks/489191157331525632/JctydW7aIC-zZCCcg2z-mPzdrm2VekZMZ1xtU42k9gCJscguT9kN07y31rf1bfxiVvUO",
-        },
-    )
-
+        comment_hooker = SteamCommentsWebhook(aid, "steam.json")
+        comment_hooker.post(
+            news_ids=news_ids,
+            user_ids=user_ids,
+            webhooks=webhooks,
+        )

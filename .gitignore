@@ -117,3 +117,4 @@ dmypy.json
 *.atom
 *.rss
 steam.json
+config.json

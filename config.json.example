@@ -1,0 +1,11 @@
+{
+    "webhooks": [
+        "https://discordapp.com/api/webhooks/123456/abc123"
+    ],
+    "app_ids": [
+        1234567890
+    ],
+    "user_ids": [
+        1234567890
+    ]
+}

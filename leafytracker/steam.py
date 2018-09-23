@@ -5,15 +5,10 @@ import logging
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone
 
+from leafytracker.const import PROJECT
 
-logger = logging.getLogger("steam.py")
 
-logging.basicConfig(
-    filename="{}.log".format("steam"),
-    format="%(asctime)s - %(levelname)s - %(name)s:%(lineno)d - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    level=logging.DEBUG,
-)
+logger = logging.getLogger(PROJECT.NAME)
 
 
 class Author:
@@ -23,7 +18,7 @@ class Author:
         self.avatar_url = avatar_url
 
     def __eq__(self, other):
-        if isisntance(other, Author):
+        if isinstance(other, Author):
             return self.uid == other.uid
 
         return False
@@ -64,6 +59,7 @@ class Comment:
             self.timestamp
         )
 
+
 class CommentsFeed:
     RE_COMMENT_ID = re.compile(r"^comment_([0-9]+)$")
     RE_GROUP_ID = re.compile(r"steam://friends/joinchat/([0-9]+)")
@@ -79,8 +75,8 @@ class CommentsFeed:
         )
         self.group_id = self._find_group_id()
         self.news_comments_url = "https://steamcommunity.com/comment/ClanAnnouncement/render/{group_id}/{post_id}".format(
-            group_id = self.group_id,
-            post_id = "{post_id}"
+            group_id=self.group_id,
+            post_id="{post_id}"
         )
 
     def _parse_cid(self, comment):
@@ -100,7 +96,6 @@ class CommentsFeed:
 
         return "".join(str(x) for x in tag.contents).strip().strip("<br/>")
 
-
     def _request_comments(self, post_id, start, count):
         args = {
             "start": start,
@@ -119,7 +114,7 @@ class CommentsFeed:
         if r.status_code == requests.codes.ok:
             return BeautifulSoup(r.json()["comments_html"], features="lxml")
 
-    def get(self, post_id, user_ids=[], start=0, count=None):
+    def get(self, post_id, user_ids=set(), start=0, count=None):
         """Returns a list of comments for the given post, optionally filtered by user ID."""
         soup = self._request_comments(post_id, start, count)
         filtered_comments = []
