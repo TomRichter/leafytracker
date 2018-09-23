@@ -53,6 +53,7 @@ def start(raw_args):
         format="%(asctime)s - %(levelname)s - %(name)s:%(lineno)d - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         level=logging.DEBUG if args.verbose else logging.INFO,
+        filemode="a",
     )
     
     # Load config file
