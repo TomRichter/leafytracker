@@ -53,6 +53,7 @@ def start(raw_args):
         level=logging.DEBUG if args.verbose else logging.INFO,
         filemode="a",
     )
+    logger.addHandler(logging.StreamHandler())
 
     # Load config file
     with open("config.json") as config_file:
