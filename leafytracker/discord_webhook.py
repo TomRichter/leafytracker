@@ -6,7 +6,6 @@ from markdownify import markdownify as md
 from os.path import isfile
 from time import sleep
 
-
 from leafytracker.steam import CommentsFeed
 
 

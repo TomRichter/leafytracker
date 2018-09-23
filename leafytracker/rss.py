@@ -1,5 +1,5 @@
 from feedgen.feed import FeedGenerator
-from steam import CommentsFeed
+from leafytracker.steam import CommentsFeed
 
 
 class SteamCommentsRss:
