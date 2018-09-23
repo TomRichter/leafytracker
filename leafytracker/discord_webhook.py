@@ -1,37 +1,23 @@
 import feedparser
 import json
-import re
-import tomd
 
 from DiscordHooks import Hook, Embed, EmbedAuthor, Color
+from markdownify import markdownify as md
 from os.path import isfile
-from leafytracker.steam import CommentsFeed
 from time import sleep
 
 
-class SteamCommentsWebhook:
-    # Extra HTML -> Markdown fixes needed on top of tomd.convert()
-    MARKDOWN_FIXES = {
-        # Convert HTML <br> to Markdown newline
-        "<br>": "\n", "<br/>": "\n", "<br />": "\n",
-        # Convert unordered pseudo-lists into Markdown unordered lists
-        "(?<=<br>)-": " * ", "(?<=<br/>)-": " * ", "(?<=<br />)-": " * ", "-": " * ",
-        # Remove Steam link filter from links
-        "https\\:\\/\\/steamcommunity\\.com\\/linkfilter\\/\\?url\\=": "",
-        "https://steamcommunity.com/linkfilter/?url=": "",
-    }
-    RE_MARKDOWN_FIXES = re.compile("|".join(MARKDOWN_FIXES.keys()))
+from leafytracker.steam import CommentsFeed
 
+
+class SteamCommentsWebhook:
     def __init__(self, app_id, cache_path):
         self.app_id = app_id
         self.steam_comments = CommentsFeed(self.app_id)
         self.last_broadcasted = LastBroadcastedCache(cache_path)
 
     def _html_to_markdown(self, text):
-                # <p></p> hack to make tomd.convert() work.
-                # lxml.html.clean.clean_html() doesn't wrap loose text in anything,
-                # so tomd.convert() throws away the entire comment.
-        return tomd.convert("<p>{}</p>".format(type(self).RE_MARKDOWN_FIXES.sub(lambda x: type(self).MARKDOWN_FIXES.get(x.group(0), "REGEX_FAILED"), text))).strip()
+        return md(text.replace("https://steamcommunity.com/linkfilter/?url=", "")).strip()
 
     def post(self, news_ids, user_ids, webhooks):
         news_ids = set(int(x) for x in news_ids)
