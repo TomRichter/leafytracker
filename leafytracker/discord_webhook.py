@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timedelta, timezone
 from os.path import isfile
 from time import sleep
 
@@ -19,7 +20,7 @@ class SteamCommentsWebhook:
     def _html_to_markdown(text):
         return md(text.replace("https://steamcommunity.com/linkfilter/?url=", "")).strip()
 
-    def post(self, news_ids, user_ids, webhooks):
+    def post(self, news_ids, user_ids, webhooks, max_age=timedelta(days=1)):
         news_ids = set(int(x) for x in news_ids)
         user_ids = set(int(x) for x in user_ids)
         webhooks = set(webhooks)
@@ -28,8 +29,9 @@ class SteamCommentsWebhook:
             for comment in self.steam_comments.get(nid, user_ids):
                 for webhook_url in webhooks:
                     last_broadcasted_id = self.last_broadcasted.get(webhook_url, nid)
+                    time_since_post = datetime.now(timezone.utc) - comment.datetime
 
-                    if comment.cid > last_broadcasted_id:
+                    if comment.cid > last_broadcasted_id and time_since_post < max_age:
                         Hook(
                             hook_url=webhook_url,
                             username="Steam Community",
@@ -86,7 +88,7 @@ class LastBroadcastedCache:
         self.db[webhook_url][news_id] = comment_id
 
 
-def run(app_ids, user_ids, webhooks, article_count=1):
+def run(app_ids, user_ids, webhooks, article_count=1, max_age=timedelta(days=7)):
     for aid in app_ids:
         news_listings = feedparser.parse("https://steamcommunity.com/games/{app_id}/rss/".format(app_id=aid))
         news_ids = {x.link.rsplit("/detail/", 1)[-1] for x in news_listings.entries[:article_count]}
@@ -96,4 +98,5 @@ def run(app_ids, user_ids, webhooks, article_count=1):
             news_ids=news_ids,
             user_ids=user_ids,
             webhooks=webhooks,
+            max_age=max_age,
         )
